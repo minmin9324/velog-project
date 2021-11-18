@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
+import { useLocation } from "react-router-dom";
 
 const PostDetail = () => {
   const [post, setPost] = useState([]);
+  let location = useLocation();
 
   useEffect(() => {
     getData();
@@ -12,20 +14,11 @@ const PostDetail = () => {
   const getData = () => {
     axios({
       method: "GET",
-      url: "https://limitless-sierra-67996.herokuapp.com/v1/posts/6195d9500b7d21002cce558e",
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts/${location.state}`,
     })
       .then((res) => {
         console.log(res.data);
         setPost(res.data);
-      })
-      .catch((err) => console.log(err));
-
-    axios({
-      method: "GET",
-      url: "https://limitless-sierra-67996.herokuapp.com/v1/posts",
-    })
-      .then((res) => {
-        console.log(res.data.results);
       })
       .catch((err) => console.log(err));
   };
