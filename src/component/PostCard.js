@@ -97,7 +97,8 @@ const PostCard = ({ post }) => {
   console.log(post.thumbnail);
 
   const gotoDetailPage = () => {
-    navigate("/detail", { state: post.id });
+    // navigate("/detail", { state: post.id });
+    navigate(`/detail/${post.id}`, { state: post.id });
   };
 
   return (
