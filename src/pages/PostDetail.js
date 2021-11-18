@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import Comments from "../component/Comments";
 
 const PostDetail = () => {
   const [post, setPost] = useState([]);
-  let location = useLocation();
+  const [comment, setComment] = useState([]);
+  const [editComment, setEditComment] = useState("");
+  const params = useParams();
 
   useEffect(() => {
     getData();
@@ -14,11 +17,27 @@ const PostDetail = () => {
   const getData = () => {
     axios({
       method: "GET",
-      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts/${location.state}`,
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts/${params.postId}`,
     })
       .then((res) => {
-        console.log(res.data);
         setPost(res.data);
+      })
+      .catch((err) => console.log(err));
+    getComment();
+  };
+
+  const getComment = () => {
+    axios({
+      method: "GET",
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/comments`,
+    })
+      .then((res) => {
+        if (res.data.results.length !== 0) {
+          const results = res.data.results.filter(
+            (ele) => ele.postId === params.postId
+          );
+          setComment(results);
+        }
       })
       .catch((err) => console.log(err));
   };
@@ -31,6 +50,24 @@ const PostDetail = () => {
     }
   };
 
+  const handleSumit = () => {
+    if (editComment !== "") {
+      axios({
+        method: "post",
+        url: `https://limitless-sierra-67996.herokuapp.com/v1/comments`,
+        data: {
+          postId: params.postId,
+          body: editComment,
+        },
+      })
+        .then((res) => {
+          getComment();
+          setEditComment("");
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
   let createdAt =
     post.createdAt &&
     post.createdAt.slice(0, post.createdAt.indexOf("-")) +
@@ -39,7 +76,7 @@ const PostDetail = () => {
       "월 " +
       post.createdAt.slice(8, 10) +
       "일";
-
+  let commentCount = comment.length;
   return (
     <Container>
       <header>
@@ -61,18 +98,42 @@ const PostDetail = () => {
       </header>
       <Content>{post.body}</Content>
       <Profilebox>
-        <ProfileImg src="./images/mango.png" alt="profile" />
+        <ProfileImg src="/images/mango.png" alt="profile" />
         <ProfileInfo>
           <a href="/@minmin9324">최정민</a>
-          <span class="description">나 다운 것, 가장 아름다운 것</span>
+          <span>나 다운 것, 가장 아름다운 것</span>
         </ProfileInfo>
       </Profilebox>
       <CommetBox>
-        <h4>0개의 댓글</h4>
-        <CommetInput placeholder="댓글을 작성하세요"></CommetInput>
-        <div>
-          <button>댓글 작성</button>
-        </div>
+        <h4>{commentCount}개의 댓글</h4>
+        <CommetInput
+          placeholder="댓글을 작성하세요"
+          value={editComment}
+          onChange={({ target }) => setEditComment(target.value)}
+        ></CommetInput>
+        <CommentSubmit>
+          <button onClick={handleSumit}>댓글 작성</button>
+        </CommentSubmit>
+        {comment &&
+          comment.map((ele) => {
+            let commentCreatedAt =
+              ele.createdAt &&
+              ele.createdAt.slice(0, ele.createdAt.indexOf("-")) +
+                "년 " +
+                ele.createdAt.slice(5, ele.createdAt.indexOf("-", 5)) +
+                "월 " +
+                ele.createdAt.slice(8, 10) +
+                "일";
+            return (
+              <Comments
+                id={ele.id}
+                comment={ele.body}
+                commentId={ele.id}
+                createdAt={commentCreatedAt}
+                getComment={getComment}
+              ></Comments>
+            );
+          })}
       </CommetBox>
     </Container>
   );
@@ -94,7 +155,7 @@ const Title = styled.h1`
   margin-top: 0 px;
   font-weight: 800;
   color: rgb(52, 58, 64);
-  margin-bottom: 2 rem;
+  margin-bottom: 2rem;
   word-break: keep-all;
 `;
 
@@ -102,7 +163,6 @@ const InfoContainer = styled.div`
   display: flex;
   justify-content: space-between;
   button {
-    padding: 0 px;
     outline: none;
     border: none;
     background: none;
@@ -180,22 +240,22 @@ const CommetBox = styled.div`
     margin-bottom: 1 rem;
     color: rgb(52, 58, 64);
   }
+`;
 
-  div {
-    display: flex;
-    justify-content: flex-end;
-    button {
-      font-weight: bold;
-      cursor: pointer;
-      outline: none;
-      border: none;
-      background: rgb(18, 184, 134);
-      color: white;
-      border-radius: 4px;
-      padding: 0px 1.25rem;
-      height: 2rem;
-      font-size: 1rem;
-    }
+const CommentSubmit = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  button {
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    background: rgb(18, 184, 134);
+    color: white;
+    border-radius: 4px;
+    padding: 0px 1.25rem;
+    height: 2rem;
+    font-size: 1rem;
   }
 `;
 

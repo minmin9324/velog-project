@@ -7,7 +7,7 @@ const Routers = () => {
     <Router>
       <Routes>
         <Route exact path="/" element={<Main />} />
-        <Route path="/detail" element={<PostDetail />} />
+        <Route path="/detail/:postId/*" element={<PostDetail />} />
       </Routes>
     </Router>
   );
