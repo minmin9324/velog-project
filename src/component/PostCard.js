@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 
 const Global = createGlobalStyle`
@@ -50,7 +50,6 @@ const ImgWrapper = styled.div`
     left: 0px;
     display: block;
   }
-  
 `;
 
 const ContentWrapper = styled.div`
@@ -90,26 +89,41 @@ const SubinfoWrapper = styled.div`
   font-size: 0.75rem;
   line-height: 1.5;
   color: rgb(134, 142, 150);
-`
+`;
 
 const PostCard = ({ post }) => {
+  const navigate = useNavigate();
+
   console.log(post.thumbnail);
+
+  const gotoDetailPage = () => {
+    navigate("/detail", { state: post.id });
+  };
+
   return (
     <>
-      <PostCardWrapper>
+      <PostCardWrapper onClick={gotoDetailPage}>
         <Global />
-        <Link to={`/PostDetails/${post.id}`}>
+        {/* <Link to={`/PostDetails/${post.id}`}> */}
+        <div>
           {/* <ImgWrapper src={post.thumbnail} /> */}
-          {post.thumbnail && <ImgWrapper><img src={post.thumbnail}/></ImgWrapper>}
+          {post.thumbnail && (
+            <ImgWrapper>
+              <img src={post.thumbnail} />
+            </ImgWrapper>
+          )}
           {/* <ImgWrapper>
             <img src={post.thumbnail} />
           </ImgWrapper> */}
-        </Link>
+        </div>
+        {/* </Link> */}
         <ContentWrapper>
-          <Link to={`/PostDetails/${post.id}`}>
+          {/* <Link to={`/PostDetails/${post.id}`}> */}
+          <div>
             <TitleWrapper>{post.title}</TitleWrapper>
             <TextWrapper>{post.body}</TextWrapper>
-          </Link>
+          </div>
+          {/* </Link> */}
           <SubinfoWrapper>
             <span>{post.createdAt}</span>
             <span> · </span>
