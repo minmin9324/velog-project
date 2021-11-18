@@ -23,6 +23,14 @@ const PostDetail = () => {
       .catch((err) => console.log(err));
   };
 
+  const handleButton = (type) => {
+    if (type === "delete") {
+      console.log("delete modal을 띄어줘");
+    } else {
+      alert("Coming soon.");
+    }
+  };
+
   let createdAt =
     post.createdAt &&
     post.createdAt.slice(0, post.createdAt.indexOf("-")) +
@@ -36,13 +44,20 @@ const PostDetail = () => {
     <Container>
       <header>
         <Title>{post.title}</Title>
-        <div>
-          <Information type="username">
-            <a>mango9324</a>
-          </Information>
-          <Information type={false}>·</Information>
-          <Information type="date">{createdAt}</Information>
-        </div>
+        <InfoContainer>
+          <div>
+            <Information type="username">
+              <a>mango9324</a>
+            </Information>
+            <Information type={false}>·</Information>
+            <Information type="date">{createdAt}</Information>
+          </div>
+          <div>
+            <button onClick={() => handleButton("statistics")}>통계</button>
+            <button onClick={() => handleButton("update")}>수정</button>
+            <button onClick={() => handleButton("delete")}>삭제</button>
+          </div>
+        </InfoContainer>
       </header>
       <Content>{post.body}</Content>
       <Profilebox>
@@ -81,6 +96,20 @@ const Title = styled.h1`
   color: rgb(52, 58, 64);
   margin-bottom: 2 rem;
   word-break: keep-all;
+`;
+
+const InfoContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  button {
+    padding: 0 px;
+    outline: none;
+    border: none;
+    background: none;
+    font-size: inherit;
+    cursor: pointer;
+    color: rgb(134, 142, 150);
+  }
 `;
 
 const Information = styled.span`
