@@ -1,5 +1,5 @@
 import axios from "axios";
-import React,{useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 
@@ -29,7 +29,6 @@ const PostCardWrapper = styled.div`
       transform: none;
     }
   }
-  
 `;
 const ImgWrapper = styled.div`
   padding-top: 52.192%;
@@ -85,48 +84,55 @@ const SubinfoWrapper = styled.div`
   color: rgb(134, 142, 150);
 `;
 
-const PostCard = ({ post,ref,index }) => {
+const PostCard = ({ post, ref }) => {
   const navigate = useNavigate();
   const [commentCount, setCommentCount] = useState(0);
   // console.log(post.thumbnail);
-  
-  useEffect(()=> {
+
+  useEffect(() => {
     getAllComments();
-  }, [])
-  
+  }, []);
+
   const gotoDetailPage = () => {
     // navigate("/detail", { state: post.id });
-    navigate(`/detail/${post.id}`, { state: index });
+    navigate(`/detail/${post.id}`);
   };
 
   const getAllComments = () => {
-    axios.get(`https://limitless-sierra-67996.herokuapp.com/v1/comments?postId=${post.id}`)
-      .then((res)=>{
+    axios
+      .get(
+        `https://limitless-sierra-67996.herokuapp.com/v1/comments?postId=${post.id}`
+      )
+      .then((res) => {
         // console.log(res.data.results);
         setCommentCount(res.data.results.length);
-      })
-  }
+      });
+  };
 
   //미리보기에 태그 없애기
   const changeTag = (data) => {
-    let result = data.replace(/&lt;+[\/a-z]+>/gi," ");
-    result = result.replace("\\n"," ");
+    let result = data.replace(/&lt;+[\/a-z]+>/gi, " ");
+    result = result.replace("\\n", " ");
     return result;
-  }
-  
+  };
+
   //게시글 만들어진 시간 표시하기
   const changeCreatedAtFormat = (createdAt) => {
     const today = new Date();
     const createdAtTime = new Date(createdAt);
-    let diff_time = Math.floor((today.getTime() - createdAtTime.getTime()) / 1000 / 60);
-    if(diff_time < 1) return '방금전';
-    if(diff_time < 60)  return `${diff_time} 분 전`;
+    let diff_time = Math.floor(
+      (today.getTime() - createdAtTime.getTime()) / 1000 / 60
+    );
+    if (diff_time < 1) return "방금전";
+    if (diff_time < 60) return `${diff_time} 분 전`;
     diff_time = Math.floor(diff_time / 60);
-    if(diff_time < 24)  return `${diff_time} 시간 전`;
+    if (diff_time < 24) return `${diff_time} 시간 전`;
     diff_time = Math.floor(diff_time / 24);
-    if(diff_time < 7) return `${diff_time} 일 전`;
-    return `${createdAtTime.getFullYear()}년 ${createdAtTime.getMonth()+1} 월 ${createdAtTime.getDate()} 일`;
-  }
+    if (diff_time < 7) return `${diff_time} 일 전`;
+    return `${createdAtTime.getFullYear()}년 ${
+      createdAtTime.getMonth() + 1
+    } 월 ${createdAtTime.getDate()} 일`;
+  };
 
   return (
     <>
