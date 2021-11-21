@@ -1,4 +1,5 @@
-import React from "react";
+import axios from "axios";
+import React,{useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 
@@ -9,35 +10,28 @@ const Global = createGlobalStyle`
 `;
 
 const PostCardWrapper = styled.div`
-  width: 20rem;
+  width: 100%;
   background: white;
-  margin: 1rem;
   box-shadow: rgb(0 0 0 / 4%) 0px 4px 16px 0px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   border-radius: 4px;
   transition: 0.25s ease-in transform;
+  cursor: pointer;
   &:hover {
     transform: translateY(-8px);
     box-shadow: rgb(0 0 0 / 8%) 0px 12px 20px 0px;
   }
 
-  @media (max-width: 1056px) {
-    width: calc(50% - 2rem);
-  }
   @media (max-width: 1024px) {
     &:hover {
       transform: none;
     }
   }
-  @media (max-width: 767px) {
-    margin: 0px;
-    width: 100%;
-  }
+  
 `;
 const ImgWrapper = styled.div`
-  // height: 140px;
   padding-top: 52.192%;
   width: 100%;
   position: relative;
@@ -91,43 +85,70 @@ const SubinfoWrapper = styled.div`
   color: rgb(134, 142, 150);
 `;
 
-const PostCard = ({ post, index }) => {
+const PostCard = ({ post,ref,index }) => {
   const navigate = useNavigate();
-  console.log(post.thumbnail);
-
+  const [commentCount, setCommentCount] = useState(0);
+  // console.log(post.thumbnail);
+  
+  useEffect(()=> {
+    getAllComments();
+  }, [])
+  
   const gotoDetailPage = () => {
     // navigate("/detail", { state: post.id });
     navigate(`/detail/${post.id}`, { state: index });
   };
 
+  const getAllComments = () => {
+    axios.get(`https://limitless-sierra-67996.herokuapp.com/v1/comments?postId=${post.id}`)
+      .then((res)=>{
+        // console.log(res.data.results);
+        setCommentCount(res.data.results.length);
+      })
+  }
+
+  //미리보기에 태그 없애기
+  const changeTag = (data) => {
+    let result = data.replace(/&lt;+[\/a-z]+>/gi," ");
+    result = result.replace("\\n"," ");
+    return result;
+  }
+  
+  //게시글 만들어진 시간 표시하기
+  const changeCreatedAtFormat = (createdAt) => {
+    const today = new Date();
+    const createdAtTime = new Date(createdAt);
+    let diff_time = Math.floor((today.getTime() - createdAtTime.getTime()) / 1000 / 60);
+    if(diff_time < 1) return '방금전';
+    if(diff_time < 60)  return `${diff_time} 분 전`;
+    diff_time = Math.floor(diff_time / 60);
+    if(diff_time < 24)  return `${diff_time} 시간 전`;
+    diff_time = Math.floor(diff_time / 24);
+    if(diff_time < 7) return `${diff_time} 일 전`;
+    return `${createdAtTime.getFullYear()}년 ${createdAtTime.getMonth()+1} 월 ${createdAtTime.getDate()} 일`;
+  }
+
   return (
     <>
       <PostCardWrapper onClick={gotoDetailPage}>
         <Global />
-        {/* <Link to={`/PostDetails/${post.id}`}> */}
         <div>
-          {/* <ImgWrapper src={post.thumbnail} /> */}
           {post.thumbnail && (
             <ImgWrapper>
               <img src={post.thumbnail} />
             </ImgWrapper>
           )}
-          {/* <ImgWrapper>
-            <img src={post.thumbnail} />
-          </ImgWrapper> */}
         </div>
-        {/* </Link> */}
         <ContentWrapper>
-          {/* <Link to={`/PostDetails/${post.id}`}> */}
           <div>
             <TitleWrapper>{post.title}</TitleWrapper>
-            <TextWrapper>{post.body}</TextWrapper>
+            <TextWrapper>{changeTag(post.body)}</TextWrapper>
           </div>
           {/* </Link> */}
           <SubinfoWrapper>
-            <span>{post.createdAt}</span>
+            <span>{changeCreatedAtFormat(post.createdAt)}</span>
             <span> · </span>
-            <span>1개의 댓글</span>
+            <span>{commentCount}개의 댓글</span>
           </SubinfoWrapper>
         </ContentWrapper>
       </PostCardWrapper>

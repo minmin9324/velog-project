@@ -5,6 +5,8 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import Comments from "../component/Comments";
 
+import DeleteModal from '../component/DeleteModal';
+import Header from "../component/Header";
 const PostDetail = () => {
   const [post, setPost] = useState([]);
   const [comment, setComment] = useState([]);
@@ -75,6 +77,7 @@ const PostDetail = () => {
   const handleButton = (type) => {
     if (type === "delete") {
       console.log("delete modal을 띄어줘");
+      setIsModal((prev)=>!prev);
     } else {
       alert("Coming soon.");
     }
@@ -117,6 +120,8 @@ const PostDetail = () => {
       "일";
   let commentCount = comment.length;
   return (
+    <>
+    <Header/>
     <Container>
       <header>
         <Title>{post.title}</Title>
@@ -132,6 +137,8 @@ const PostDetail = () => {
             <button onClick={() => handleButton("statistics")}>통계</button>
             <button onClick={() => handleButton("update")}>수정</button>
             <button onClick={() => handleButton("delete")}>삭제</button>
+            {isModal && <DeleteModal isModal={setIsModal} postId={post.id}/>}
+
           </div>
         </InfoContainer>
       </header>
@@ -200,6 +207,7 @@ const PostDetail = () => {
           })}
       </CommetBox>
     </Container>
+    </>
   );
 };
 
