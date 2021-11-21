@@ -5,7 +5,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import Comments from "../component/Comments";
 
-import DeleteModal from '../component/DeleteModal';
+import DeleteModal from "../component/DeleteModal";
 import Header from "../component/Header";
 const PostDetail = () => {
   const [post, setPost] = useState([]);
@@ -13,6 +13,7 @@ const PostDetail = () => {
   const [editComment, setEditComment] = useState("");
   const [prevPostId, setPrevPostId] = useState("");
   const [nextPostId, setNextPostId] = useState("");
+  const [isModal, setIsModal] = useState(false);
 
   const params = useParams();
   let location = useLocation();
@@ -37,7 +38,7 @@ const PostDetail = () => {
 
     axios({
       method: "GET",
-      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts`,
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts?sortBy=createdAt`,
     })
       .then((res) => {
         if (res.data.results.length !== 0) {
@@ -77,7 +78,7 @@ const PostDetail = () => {
   const handleButton = (type) => {
     if (type === "delete") {
       console.log("delete modal을 띄어줘");
-      setIsModal((prev)=>!prev);
+      setIsModal((prev) => !prev);
     } else {
       alert("Coming soon.");
     }
@@ -121,37 +122,35 @@ const PostDetail = () => {
   let commentCount = comment.length;
   return (
     <>
-    <Header/>
-    <Container>
-      <header>
-        <Title>{post.title}</Title>
-        <InfoContainer>
-          <div>
-            <Information type="username">
-              <a>mango9324</a>
-            </Information>
-            <Information type={false}>·</Information>
-            <Information type="date">{createdAt}</Information>
-          </div>
-          <div>
-            <button onClick={() => handleButton("statistics")}>통계</button>
-            <button onClick={() => handleButton("update")}>수정</button>
-            <button onClick={() => handleButton("delete")}>삭제</button>
-            {isModal && <DeleteModal isModal={setIsModal} postId={post.id}/>}
-
-          </div>
-        </InfoContainer>
-      </header>
-      <Content>{post.body}</Content>
-      <Profilebox>
-        <ProfileImg src="/images/mango.png" alt="profile" />
-        <ProfileInfo>
-          <a href="/@minmin9324">최정민</a>
-          <span>나 다운 것, 가장 아름다운 것</span>
-        </ProfileInfo>
-      </Profilebox>
-      <PreviousNextPostContainer>
-        <preBox>
+      <Header />
+      <Container>
+        <header>
+          <Title>{post.title}</Title>
+          <InfoContainer>
+            <div>
+              <Information type="username">
+                <a>mango9324</a>
+              </Information>
+              <Information type={false}>·</Information>
+              <Information type="date">{createdAt}</Information>
+            </div>
+            <div>
+              <button onClick={() => handleButton("statistics")}>통계</button>
+              <button onClick={() => handleButton("update")}>수정</button>
+              <button onClick={() => handleButton("delete")}>삭제</button>
+              {isModal && <DeleteModal isModal={setIsModal} postId={post.id} />}
+            </div>
+          </InfoContainer>
+        </header>
+        <Content>{post.body}</Content>
+        <Profilebox>
+          <ProfileImg src="/images/mango.png" alt="profile" />
+          <ProfileInfo>
+            <a href="/@minmin9324">최정민</a>
+            <span>나 다운 것, 가장 아름다운 것</span>
+          </ProfileInfo>
+        </Profilebox>
+        <PreviousNextPostContainer>
           {prevPostId && (
             <PreviousNextPostBox onClick={() => handlePreviousNext("prev")}>
               <PreviousIcon></PreviousIcon>
@@ -161,52 +160,51 @@ const PostDetail = () => {
               </TextBox>
             </PreviousNextPostBox>
           )}
-        </preBox>
-        {nextPostId && (
-          <PreviousNextPostBox
-            type="next"
-            onClick={() => handlePreviousNext("next")}
-          >
-            <TextBox type="next">
-              <p>다음 포스트</p>
-              <h3>{nextPostId.title}</h3>
-            </TextBox>
-            <NextIcon></NextIcon>
-          </PreviousNextPostBox>
-        )}
-      </PreviousNextPostContainer>
-      <CommetBox>
-        <h4>{commentCount}개의 댓글</h4>
-        <CommetInput
-          placeholder="댓글을 작성하세요"
-          value={editComment}
-          onChange={({ target }) => setEditComment(target.value)}
-        ></CommetInput>
-        <CommentSubmit>
-          <button onClick={handleSumit}>댓글 작성</button>
-        </CommentSubmit>
-        {comment &&
-          comment.map((ele) => {
-            let commentCreatedAt =
-              ele.createdAt &&
-              ele.createdAt.slice(0, ele.createdAt.indexOf("-")) +
-                "년 " +
-                ele.createdAt.slice(5, ele.createdAt.indexOf("-", 5)) +
-                "월 " +
-                ele.createdAt.slice(8, 10) +
-                "일";
-            return (
-              <Comments
-                id={ele.id}
-                comment={ele.body}
-                commentId={ele.id}
-                createdAt={commentCreatedAt}
-                getComment={getComment}
-              ></Comments>
-            );
-          })}
-      </CommetBox>
-    </Container>
+          {nextPostId && (
+            <PreviousNextPostBox
+              type="next"
+              onClick={() => handlePreviousNext("next")}
+            >
+              <TextBox type="next">
+                <p>다음 포스트</p>
+                <h3>{nextPostId.title}</h3>
+              </TextBox>
+              <NextIcon></NextIcon>
+            </PreviousNextPostBox>
+          )}
+        </PreviousNextPostContainer>
+        <CommetBox>
+          <h4>{commentCount}개의 댓글</h4>
+          <CommetInput
+            placeholder="댓글을 작성하세요"
+            value={editComment}
+            onChange={({ target }) => setEditComment(target.value)}
+          ></CommetInput>
+          <CommentSubmit>
+            <button onClick={handleSumit}>댓글 작성</button>
+          </CommentSubmit>
+          {comment &&
+            comment.map((ele) => {
+              let commentCreatedAt =
+                ele.createdAt &&
+                ele.createdAt.slice(0, ele.createdAt.indexOf("-")) +
+                  "년 " +
+                  ele.createdAt.slice(5, ele.createdAt.indexOf("-", 5)) +
+                  "월 " +
+                  ele.createdAt.slice(8, 10) +
+                  "일";
+              return (
+                <Comments
+                  id={ele.id}
+                  comment={ele.body}
+                  commentId={ele.id}
+                  createdAt={commentCreatedAt}
+                  getComment={getComment}
+                ></Comments>
+              );
+            })}
+        </CommetBox>
+      </Container>
     </>
   );
 };
@@ -350,10 +348,6 @@ const CommetInput = styled.textarea`
 const PreviousNextPostContainer = styled.div`
   margin: 3rem 0;
   display: flex;
-`;
-
-const preBox = styled.div`
-  flex: 1 1 0%;
 `;
 
 const PreviousNextPostBox = styled.div`
