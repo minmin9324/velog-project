@@ -1,10 +1,11 @@
+
 import React, {useState, useEffect, useCallback} from "react";
 import { useInView } from "react-intersection-observer";
 import axios from 'axios';
 import styled, {createGlobalStyle} from "styled-components";
 import PostCard from '../component/PostCard';
-
 import Header from "../component/Header";
+
 
 const Global = createGlobalStyle`
 body {
@@ -44,7 +45,6 @@ margin-right: auto;
     width: 100%;
   }
 }
-
 `;
 
 const PostList = styled.div`
@@ -52,6 +52,7 @@ display: flex;
 margin: -1rem;
 flex-wrap: wrap;
 `
+
 
 const Main = () => {
   const [posts, setPosts] = useState([]);
@@ -89,11 +90,13 @@ const Main = () => {
     }
   }, [inView, loading]);
 
+
   return (
     <>
       <Global />
       <Header />
       <MainWrapper>
+
         <PostList>
           {posts.map((post, idx)=> (
             <React.Fragment>
@@ -108,8 +111,8 @@ const Main = () => {
               )}
             </React.Fragment>
           ))}
+
         </PostList>
-        
       </MainWrapper>
     </>
   );

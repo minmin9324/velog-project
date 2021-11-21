@@ -85,7 +85,7 @@ const SubinfoWrapper = styled.div`
   color: rgb(134, 142, 150);
 `;
 
-const PostCard = ({ post,ref }) => {
+const PostCard = ({ post,ref,index }) => {
   const navigate = useNavigate();
   const [commentCount, setCommentCount] = useState(0);
   // console.log(post.thumbnail);
@@ -93,8 +93,10 @@ const PostCard = ({ post,ref }) => {
   useEffect(()=> {
     getAllComments();
   }, [])
+  
   const gotoDetailPage = () => {
-    navigate("/detail", { state: post.id });
+    // navigate("/detail", { state: post.id });
+    navigate(`/detail/${post.id}`, { state: index });
   };
 
   const getAllComments = () => {
