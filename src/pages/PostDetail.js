@@ -3,8 +3,11 @@ import axios from "axios";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 
+import DeleteModal from '../component/DeleteModal';
+import Header from "../component/Header";
 const PostDetail = () => {
   const [post, setPost] = useState([]);
+  const [isModal, setIsModal] = useState(false);
   let location = useLocation();
 
   useEffect(() => {
@@ -26,6 +29,7 @@ const PostDetail = () => {
   const handleButton = (type) => {
     if (type === "delete") {
       console.log("delete modal을 띄어줘");
+      setIsModal((prev)=>!prev);
     } else {
       alert("Coming soon.");
     }
@@ -41,6 +45,8 @@ const PostDetail = () => {
       "일";
 
   return (
+    <>
+    <Header/>
     <Container>
       <header>
         <Title>{post.title}</Title>
@@ -56,6 +62,8 @@ const PostDetail = () => {
             <button onClick={() => handleButton("statistics")}>통계</button>
             <button onClick={() => handleButton("update")}>수정</button>
             <button onClick={() => handleButton("delete")}>삭제</button>
+            {isModal && <DeleteModal isModal={setIsModal} postId={post.id}/>}
+
           </div>
         </InfoContainer>
       </header>
@@ -75,6 +83,7 @@ const PostDetail = () => {
         </div>
       </CommetBox>
     </Container>
+    </>
   );
 };
 

@@ -1,9 +1,10 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useCallback} from "react";
+import { useInView } from "react-intersection-observer";
 import axios from 'axios';
 import styled, {createGlobalStyle} from "styled-components";
 import PostCard from '../component/PostCard';
-import { initialState } from "./data";
-import DeleteModal from "../component/DeleteModal";
+
+import Header from "../component/Header";
 
 const Global = createGlobalStyle`
 body {
@@ -16,6 +17,7 @@ margin-top: 100px;
 width: 1728px;
 margin-left: auto;
 margin-right: auto;
+// border: 1px solid black;
 @media (max-width: 1919px) {
   width: 1376px;
 }
@@ -25,84 +27,87 @@ margin-right: auto;
 @media (max-width: 1056px) {
   width: calc(100% - 2rem);
 }
+.card {
+  width: 20rem;
+  margin: 1rem;
+  @media (max-width: 1056px) {
+    width: calc(50% - 2rem);
+    
+  }
+  @media (max-width: 1024px) {
+    &:hover {
+      transform: none;
+    }
+  }
+  @media (max-width: 767px) {
+    margin: 1rem;
+    width: 100%;
+  }
+}
 
 `;
 
 const PostList = styled.div`
 display: flex;
 margin: -1rem;
-// grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-// margin-left: 100px;
-// margin-bottom: 100px;
 flex-wrap: wrap;
 `
 
 const Main = () => {
   const [posts, setPosts] = useState([]);
-  const [isModal, setIsModal] = useState(false);
+  
   const [hasmorePost, setHasmorePost] = useState(true);
-  console.log("렌더링")
-  console.log(posts);
-  const deleteClick = (e) => {
-    e.preventDefault();
-    setIsModal(true);
-  }
+  const [loading, setLoading] = useState(false);
+  const [ref, inView] = useInView();
+  const [page, setPage] = useState(1);
 
-  const listClick = () => {
-    console.log(posts);
-  }
-
-  const addPost = (data) => {
-    console.log('ADD POST')
-    console.log(data);
-    setPosts([...posts,...posts]);
-  }
-  useEffect(()=>{
-    axios.get('https://limitless-sierra-67996.herokuapp.com/v1/posts?limit=20')
-      .then(res => {
-        console.log(res.data.results);
-        setPosts([...posts,...res.data.results])
+  const getItems = useCallback(async() => {
+    setLoading(true);
+    await axios.get(`https://limitless-sierra-67996.herokuapp.com/v1/posts?limit=20&page=${page}&sortBy=createdAt:desc`)
+      .then(res=>{
+        
+        // console.log(res.data.results.length);
+        if(res.data.results.length === 0) {
+          setHasmorePost(false);
+        }
+        setPosts((prevState)=>{
+          return [...prevState,...res.data.results];
+        });
       })
-    
+      .catch(err=>console.log(err));
+    setLoading(false);
+  }, [page]);
+
+  useEffect(()=>{
+    getItems();
     // console.log(posts);
-  },[]);
+  },[getItems]);
 
-  // useEffect(()=> {
-    
-  //   function onScroll() {
-  //     //scrollY: 얼마나 내렸는지, clientHeight: 화면 보이는 길이, scrollHeight: 총 길이
-  //     console.log(window.scrollY, document.documentElement.clientHeight, document.documentElement.scrollHeight);
-  //     if(window.scrollY + document.documentElement.clientHeight === document.documentElement.scrollHeight) {
-  //       //새로운거 로딩
-  //       console.log(posts);
-  //       console.log("new post load")
-  //       axios.get('https://limitless-sierra-67996.herokuapp.com/v1/posts?limit=20')
-  //         .then(res => {
-  //           console.log(res.data.results);
-  //           console.log(posts);
-  //           setPosts([...posts,...res.data.results])
-  //           //addPost(res.data.results);
-  //           console.log("현재 포스트리스트");
-  //           console.log(posts);
-  //         })
-  //     }
-  //   }
-  //   window.addEventListener('scroll', onScroll);
-  //   return () => {
-  //     window.removeEventListener('scroll', onScroll);
-  //   };
+  useEffect(()=>{
+    if(inView && !loading && hasmorePost) {
+      setPage(prevState=>prevState+1);
+    }
+  }, [inView, loading]);
 
-  // }, [hasmorePost]);
   return (
     <>
       <Global />
+      <Header />
       <MainWrapper>
-        <button onClick={deleteClick}>삭제</button>
-        <button onClick={listClick}>포스트리스트확인</button>
-        <button onClick={addPost}>포스트추가</button>
-        {isModal && <DeleteModal isModal={setIsModal}/>}
         <PostList>
-          {posts.map(post=>(<PostCard key={post.id} post={post}/>))}
+          {posts.map((post, idx)=> (
+            <React.Fragment>
+              {posts.length - 1 == idx ? (
+                <div className="card" ref={ref}>
+                  <PostCard key={post.id} post={post}/>
+                </div>
+              ):(
+                <div className="card">
+                  <PostCard key={post.id} post={post} />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
         </PostList>
         
       </MainWrapper>
