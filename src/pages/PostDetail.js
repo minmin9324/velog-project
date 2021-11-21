@@ -16,11 +16,7 @@ const PostDetail = () => {
   const [isModal, setIsModal] = useState(false);
 
   const params = useParams();
-  let location = useLocation();
   const navigate = useNavigate();
-
-  console.log(params, location);
-  console.log(location.state);
 
   useEffect(() => {
     getData();
@@ -38,19 +34,22 @@ const PostDetail = () => {
 
     axios({
       method: "GET",
-      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts?sortBy=createdAt`,
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts?limit=100&sortBy=createdAt:desc`,
     })
       .then((res) => {
         if (res.data.results.length !== 0) {
-          if (location.state === 0) {
-            setNextPostId(res.data.results[location.state + 1]);
+          let finder = res.data.results.findIndex(
+            (ele) => ele.id === params.postId
+          );
+          if (finder === 0) {
+            setNextPostId(res.data.results[finder + 1]);
             setPrevPostId("");
-          } else if (location.state === res.data.results.length - 1) {
-            setPrevPostId(res.data.results[location.state - 1]);
+          } else if (finder === res.data.results.length - 1) {
+            setPrevPostId(res.data.results[finder - 1]);
             setNextPostId("");
           } else {
-            setNextPostId(res.data.results[location.state + 1]);
-            setPrevPostId(res.data.results[location.state - 1]);
+            setNextPostId(res.data.results[finder + 1]);
+            setPrevPostId(res.data.results[finder - 1]);
           }
         }
       })
@@ -101,13 +100,11 @@ const PostDetail = () => {
         .catch((err) => console.log(err));
     }
   };
-  console.log(nextPostId, prevPostId);
   const handlePreviousNext = (type) => {
-    console.log(prevPostId, nextPostId);
     if (type === "prev") {
-      navigate(`/detail/${prevPostId.id}`, { state: location.state - 1 });
+      navigate(`/detail/${prevPostId.id}`);
     } else {
-      navigate(`/detail/${nextPostId.id}`, { state: location.state + 1 });
+      navigate(`/detail/${nextPostId.id}`);
     }
   };
 
