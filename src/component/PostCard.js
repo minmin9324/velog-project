@@ -91,14 +91,13 @@ const SubinfoWrapper = styled.div`
   color: rgb(134, 142, 150);
 `;
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, index }) => {
   const navigate = useNavigate();
-
   console.log(post.thumbnail);
 
   const gotoDetailPage = () => {
     // navigate("/detail", { state: post.id });
-    navigate(`/detail/${post.id}`, { state: post.id });
+    navigate(`/detail/${post.id}`, { state: index });
   };
 
   return (

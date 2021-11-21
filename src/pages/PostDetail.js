@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import Comments from "../component/Comments";
 
 const PostDetail = () => {
   const [post, setPost] = useState([]);
   const [comment, setComment] = useState([]);
   const [editComment, setEditComment] = useState("");
+  const [prevPostId, setPrevPostId] = useState("");
+  const [nextPostId, setNextPostId] = useState("");
+
   const params = useParams();
+  let location = useLocation();
+  const navigate = useNavigate();
+
+  console.log(params, location);
+  console.log(location.state);
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [params.postId]);
 
   const getData = () => {
     axios({
@@ -23,6 +32,27 @@ const PostDetail = () => {
         setPost(res.data);
       })
       .catch((err) => console.log(err));
+
+    axios({
+      method: "GET",
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts`,
+    })
+      .then((res) => {
+        if (res.data.results.length !== 0) {
+          if (location.state === 0) {
+            setNextPostId(res.data.results[location.state + 1]);
+            setPrevPostId("");
+          } else if (location.state === res.data.results.length - 1) {
+            setPrevPostId(res.data.results[location.state - 1]);
+            setNextPostId("");
+          } else {
+            setNextPostId(res.data.results[location.state + 1]);
+            setPrevPostId(res.data.results[location.state - 1]);
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+
     getComment();
   };
 
@@ -52,6 +82,7 @@ const PostDetail = () => {
 
   const handleSumit = () => {
     if (editComment !== "") {
+      setEditComment("");
       axios({
         method: "post",
         url: `https://limitless-sierra-67996.herokuapp.com/v1/comments`,
@@ -62,9 +93,17 @@ const PostDetail = () => {
       })
         .then((res) => {
           getComment();
-          setEditComment("");
         })
         .catch((err) => console.log(err));
+    }
+  };
+  console.log(nextPostId, prevPostId);
+  const handlePreviousNext = (type) => {
+    console.log(prevPostId, nextPostId);
+    if (type === "prev") {
+      navigate(`/detail/${prevPostId.id}`, { state: location.state - 1 });
+    } else {
+      navigate(`/detail/${nextPostId.id}`, { state: location.state + 1 });
     }
   };
 
@@ -104,6 +143,31 @@ const PostDetail = () => {
           <span>나 다운 것, 가장 아름다운 것</span>
         </ProfileInfo>
       </Profilebox>
+      <PreviousNextPostContainer>
+        <preBox>
+          {prevPostId && (
+            <PreviousNextPostBox onClick={() => handlePreviousNext("prev")}>
+              <PreviousIcon></PreviousIcon>
+              <TextBox type="previous">
+                <p>이전 포스트</p>
+                <h3>{prevPostId.title}</h3>
+              </TextBox>
+            </PreviousNextPostBox>
+          )}
+        </preBox>
+        {nextPostId && (
+          <PreviousNextPostBox
+            type="next"
+            onClick={() => handlePreviousNext("next")}
+          >
+            <TextBox type="next">
+              <p>다음 포스트</p>
+              <h3>{nextPostId.title}</h3>
+            </TextBox>
+            <NextIcon></NextIcon>
+          </PreviousNextPostBox>
+        )}
+      </PreviousNextPostContainer>
       <CommetBox>
         <h4>{commentCount}개의 댓글</h4>
         <CommetInput
@@ -197,7 +261,7 @@ const Profilebox = styled.div`
   align-items: center;
   padding-bottom: 2rem;
   margin-top: 16rem;
-  margin-bottom: 6rem;
+  margin-bottom: 7rem;
   border-bottom: 1px solid rgb(233, 236, 239);
 `;
 
@@ -237,7 +301,7 @@ const CommetBox = styled.div`
     font-size: 1.125rem;
     line-height: 1.5;
     font-weight: 500;
-    margin-bottom: 1 rem;
+    margin-bottom: 1rem;
     color: rgb(52, 58, 64);
   }
 `;
@@ -273,4 +337,77 @@ const CommetInput = styled.textarea`
   font-size: 1rem;
   color: rgb(33, 37, 41);
   line-height: 1.75;
+`;
+
+const PreviousNextPostContainer = styled.div`
+  margin: 3rem 0;
+  display: flex;
+`;
+
+const preBox = styled.div`
+  flex: 1 1 0%;
+`;
+
+const PreviousNextPostBox = styled.div`
+  cursor: pointer;
+  background: rgb(248, 249, 250);
+  box-shadow: rgb(0 0 0 / 6%) 0px 0px 4px 0px;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  ${({ type }) => (type === "next" ? "margin-left: 3rem;" : "")};
+  max-width: 360px;
+`;
+
+const PreviousIcon = styled(BsArrowLeftCircle)`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: rgb(32, 201, 151);
+  margin-right: 1rem;
+`;
+
+const NextIcon = styled(BsArrowRightCircle)`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: rgb(32, 201, 151);
+  margin-left: 1rem;
+`;
+
+const TextBox = styled.div`
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  align-items: ${({ type }) => (type === "next" ? "flex-end;" : "flex-start;")};
+  line-height: 1;
+  min-width: 0px;
+  P {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: rgb(73, 80, 87);
+    padding: 0;
+    line-height: 1;
+    margin: 0px;
+  }
+  h3 {
+    width: 100%;
+    font-size: 1.125rem;
+    color: rgb(73, 80, 87);
+    line-height: 1.15;
+    margin: 0.5rem 0px 0px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    ${({ type }) => (type === "next" ? "text-align : right;" : "")}
+  }
 `;
