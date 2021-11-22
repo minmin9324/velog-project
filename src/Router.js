@@ -3,6 +3,7 @@ import Main from "./pages/Main";
 import PostDetail from "./pages/PostDetail";
 import PostCreate from "./pages/PostCreate/index";
 
+
 const Routers = () => {
   return (
     <Router>

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
+import Modal from "./Modal";
 
 const Comments = ({ createdAt, comment, getComment, commentId }) => {
   const [updateButton, setUpdateButton] = useState(false);
   const [editComment, setEditComment] = useState("");
+  const [isModal, setIsModal] = useState(false);
 
   const handleEditComment = ({ target }) => {
     setEditComment(target.value);
@@ -12,14 +14,7 @@ const Comments = ({ createdAt, comment, getComment, commentId }) => {
 
   const handleComment = ({ target }) => {
     if (target.name === "delete") {
-      axios({
-        method: "delete",
-        url: `https://limitless-sierra-67996.herokuapp.com/v1/comments/${commentId}`,
-      })
-        .then((res) => {
-          getComment();
-        })
-        .catch((err) => console.log(err));
+      setIsModal(true);
     } else {
       if (editComment !== "") {
         axios({
@@ -38,6 +33,19 @@ const Comments = ({ createdAt, comment, getComment, commentId }) => {
     }
   };
 
+  const handleConfirm = ({ target }) => {
+    setIsModal(false);
+    if (target.name !== "cancel") {
+      axios({
+        method: "delete",
+        url: `https://limitless-sierra-67996.herokuapp.com/v1/comments/${commentId}`,
+      })
+        .then((res) => {
+          getComment();
+        })
+        .catch((err) => console.log(err));
+    }
+  };
   return (
     <CommentBox>
       <ProfileBox>
@@ -80,6 +88,13 @@ const Comments = ({ createdAt, comment, getComment, commentId }) => {
         </div>
       ) : (
         <p>{comment}</p>
+      )}
+      {isModal && (
+        <Modal
+          title="댓글 삭제"
+          Message="댓글을 정말로 삭제하시겠습니까?"
+          handleConfirm={handleConfirm}
+        />
       )}
     </CommentBox>
   );

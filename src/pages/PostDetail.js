@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import Comments from "../component/Comments";
 
+import DeleteModal from "../component/DeleteModal";
+import Header from "../component/Header";
 const PostDetail = () => {
   const [post, setPost] = useState([]);
   const [comment, setComment] = useState([]);
   const [editComment, setEditComment] = useState("");
+  const [prevPostId, setPrevPostId] = useState("");
+  const [nextPostId, setNextPostId] = useState("");
+  const [isModal, setIsModal] = useState(false);
+
   const params = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [params.postId]);
 
   const getData = () => {
     axios({
@@ -23,6 +31,30 @@ const PostDetail = () => {
         setPost(res.data);
       })
       .catch((err) => console.log(err));
+
+    axios({
+      method: "GET",
+      url: `https://limitless-sierra-67996.herokuapp.com/v1/posts?limit=100&sortBy=createdAt:desc`,
+    })
+      .then((res) => {
+        if (res.data.results.length !== 0) {
+          let finder = res.data.results.findIndex(
+            (ele) => ele.id === params.postId
+          );
+          if (finder === 0) {
+            setNextPostId(res.data.results[finder + 1]);
+            setPrevPostId("");
+          } else if (finder === res.data.results.length - 1) {
+            setPrevPostId(res.data.results[finder - 1]);
+            setNextPostId("");
+          } else {
+            setNextPostId(res.data.results[finder + 1]);
+            setPrevPostId(res.data.results[finder - 1]);
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+
     getComment();
   };
 
@@ -45,6 +77,7 @@ const PostDetail = () => {
   const handleButton = (type) => {
     if (type === "delete") {
       console.log("delete modal을 띄어줘");
+      setIsModal((prev) => !prev);
     } else {
       alert("Coming soon.");
     }
@@ -52,6 +85,7 @@ const PostDetail = () => {
 
   const handleSumit = () => {
     if (editComment !== "") {
+      setEditComment("");
       axios({
         method: "post",
         url: `https://limitless-sierra-67996.herokuapp.com/v1/comments`,
@@ -62,9 +96,15 @@ const PostDetail = () => {
       })
         .then((res) => {
           getComment();
-          setEditComment("");
         })
         .catch((err) => console.log(err));
+    }
+  };
+  const handlePreviousNext = (type) => {
+    if (type === "prev") {
+      navigate(`/detail/${prevPostId.id}`);
+    } else {
+      navigate(`/detail/${nextPostId.id}`);
     }
   };
 
@@ -78,64 +118,91 @@ const PostDetail = () => {
       "일";
   let commentCount = comment.length;
   return (
-    <Container>
-      <header>
-        <Title>{post.title}</Title>
-        <InfoContainer>
-          <div>
-            <Information type="username">
-              <a>mango9324</a>
-            </Information>
-            <Information type={false}>·</Information>
-            <Information type="date">{createdAt}</Information>
-          </div>
-          <div>
-            <button onClick={() => handleButton("statistics")}>통계</button>
-            <button onClick={() => handleButton("update")}>수정</button>
-            <button onClick={() => handleButton("delete")}>삭제</button>
-          </div>
-        </InfoContainer>
-      </header>
-      <Content>{post.body}</Content>
-      <Profilebox>
-        <ProfileImg src="/images/mango.png" alt="profile" />
-        <ProfileInfo>
-          <a href="/@minmin9324">최정민</a>
-          <span>나 다운 것, 가장 아름다운 것</span>
-        </ProfileInfo>
-      </Profilebox>
-      <CommetBox>
-        <h4>{commentCount}개의 댓글</h4>
-        <CommetInput
-          placeholder="댓글을 작성하세요"
-          value={editComment}
-          onChange={({ target }) => setEditComment(target.value)}
-        ></CommetInput>
-        <CommentSubmit>
-          <button onClick={handleSumit}>댓글 작성</button>
-        </CommentSubmit>
-        {comment &&
-          comment.map((ele) => {
-            let commentCreatedAt =
-              ele.createdAt &&
-              ele.createdAt.slice(0, ele.createdAt.indexOf("-")) +
-                "년 " +
-                ele.createdAt.slice(5, ele.createdAt.indexOf("-", 5)) +
-                "월 " +
-                ele.createdAt.slice(8, 10) +
-                "일";
-            return (
-              <Comments
-                id={ele.id}
-                comment={ele.body}
-                commentId={ele.id}
-                createdAt={commentCreatedAt}
-                getComment={getComment}
-              ></Comments>
-            );
-          })}
-      </CommetBox>
-    </Container>
+    <>
+      <Header />
+      <Container>
+        <header>
+          <Title>{post.title}</Title>
+          <InfoContainer>
+            <div>
+              <Information type="username">
+                <a>mango9324</a>
+              </Information>
+              <Information type={false}>·</Information>
+              <Information type="date">{createdAt}</Information>
+            </div>
+            <div>
+              <button onClick={() => handleButton("statistics")}>통계</button>
+              <button onClick={() => handleButton("update")}>수정</button>
+              <button onClick={() => handleButton("delete")}>삭제</button>
+              {isModal && <DeleteModal isModal={setIsModal} postId={post.id} />}
+            </div>
+          </InfoContainer>
+        </header>
+        <Content>{post.body}</Content>
+        <Profilebox>
+          <ProfileImg src="/images/mango.png" alt="profile" />
+          <ProfileInfo>
+            <a href="/@minmin9324">최정민</a>
+            <span>나 다운 것, 가장 아름다운 것</span>
+          </ProfileInfo>
+        </Profilebox>
+        <PreviousNextPostContainer>
+          {prevPostId && (
+            <PreviousNextPostBox onClick={() => handlePreviousNext("prev")}>
+              <PreviousIcon></PreviousIcon>
+              <TextBox type="previous">
+                <p>이전 포스트</p>
+                <h3>{prevPostId.title}</h3>
+              </TextBox>
+            </PreviousNextPostBox>
+          )}
+          {nextPostId && (
+            <PreviousNextPostBox
+              type="next"
+              onClick={() => handlePreviousNext("next")}
+            >
+              <TextBox type="next">
+                <p>다음 포스트</p>
+                <h3>{nextPostId.title}</h3>
+              </TextBox>
+              <NextIcon></NextIcon>
+            </PreviousNextPostBox>
+          )}
+        </PreviousNextPostContainer>
+        <CommetBox>
+          <h4>{commentCount}개의 댓글</h4>
+          <CommetInput
+            placeholder="댓글을 작성하세요"
+            value={editComment}
+            onChange={({ target }) => setEditComment(target.value)}
+          ></CommetInput>
+          <CommentSubmit>
+            <button onClick={handleSumit}>댓글 작성</button>
+          </CommentSubmit>
+          {comment &&
+            comment.map((ele) => {
+              let commentCreatedAt =
+                ele.createdAt &&
+                ele.createdAt.slice(0, ele.createdAt.indexOf("-")) +
+                  "년 " +
+                  ele.createdAt.slice(5, ele.createdAt.indexOf("-", 5)) +
+                  "월 " +
+                  ele.createdAt.slice(8, 10) +
+                  "일";
+              return (
+                <Comments
+                  id={ele.id}
+                  comment={ele.body}
+                  commentId={ele.id}
+                  createdAt={commentCreatedAt}
+                  getComment={getComment}
+                ></Comments>
+              );
+            })}
+        </CommetBox>
+      </Container>
+    </>
   );
 };
 
@@ -197,7 +264,7 @@ const Profilebox = styled.div`
   align-items: center;
   padding-bottom: 2rem;
   margin-top: 16rem;
-  margin-bottom: 6rem;
+  margin-bottom: 7rem;
   border-bottom: 1px solid rgb(233, 236, 239);
 `;
 
@@ -237,7 +304,7 @@ const CommetBox = styled.div`
     font-size: 1.125rem;
     line-height: 1.5;
     font-weight: 500;
-    margin-bottom: 1 rem;
+    margin-bottom: 1rem;
     color: rgb(52, 58, 64);
   }
 `;
@@ -273,4 +340,73 @@ const CommetInput = styled.textarea`
   font-size: 1rem;
   color: rgb(33, 37, 41);
   line-height: 1.75;
+`;
+
+const PreviousNextPostContainer = styled.div`
+  margin: 3rem 0;
+  display: flex;
+`;
+
+const PreviousNextPostBox = styled.div`
+  cursor: pointer;
+  background: rgb(248, 249, 250);
+  box-shadow: rgb(0 0 0 / 6%) 0px 0px 4px 0px;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  ${({ type }) => (type === "next" ? "margin-left: 3rem;" : "")};
+  max-width: 360px;
+`;
+
+const PreviousIcon = styled(BsArrowLeftCircle)`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: rgb(32, 201, 151);
+  margin-right: 1rem;
+`;
+
+const NextIcon = styled(BsArrowRightCircle)`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: rgb(32, 201, 151);
+  margin-left: 1rem;
+`;
+
+const TextBox = styled.div`
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  align-items: ${({ type }) => (type === "next" ? "flex-end;" : "flex-start;")};
+  line-height: 1;
+  min-width: 0px;
+  P {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: rgb(73, 80, 87);
+    padding: 0;
+    line-height: 1;
+    margin: 0px;
+  }
+  h3 {
+    width: 100%;
+    font-size: 1.125rem;
+    color: rgb(73, 80, 87);
+    line-height: 1.15;
+    margin: 0.5rem 0px 0px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    ${({ type }) => (type === "next" ? "text-align : right;" : "")}
+  }
 `;
