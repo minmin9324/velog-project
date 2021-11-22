@@ -3,14 +3,13 @@ import Main from "./pages/Main";
 import PostDetail from "./pages/PostDetail";
 import PostCreate from "./pages/PostCreate/index";
 
-
 const Routers = () => {
   return (
     <Router>
       <Routes>
         <Route exact path="/" element={<Main />} />
         <Route path="/detail/:postId/*" element={<PostDetail />} />
-        <Route path="/write" element={<PostCreate />} />
+        <Route path="/create" element={<PostCreate />} />
       </Routes>
     </Router>
   );

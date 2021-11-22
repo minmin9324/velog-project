@@ -27,6 +27,7 @@ const PostCreate = () => {
   };
 
   const getContent = (e) => {
+    e.preventDefault();
     setContent(e.target.value);
   };
 
@@ -36,9 +37,9 @@ const PostCreate = () => {
       title,
       body: content,
     };
+    console.log(body);
     try {
       await axios.post(url, body);
-      console.log("성공");
     } catch (err) {
       console.error(err);
     }
@@ -48,7 +49,7 @@ const PostCreate = () => {
     <>
       <Global />
       <PostCreateBox>
-        <PostWritingBox>
+        <PostWritingBox onSubmit={postContent}>
           <Titlebox
             placeholder="제목을 입력하세요"
             value={title}
@@ -86,7 +87,10 @@ const PostCreate = () => {
           </FixedBottomMenu>
         </PostWritingBox>
 
-        <PostPreviewBox></PostPreviewBox>
+        <PostPreviewBox>
+          <PreviewTitle>{title}</PreviewTitle>
+          <PreviewContent>{content}</PreviewContent>
+        </PostPreviewBox>
       </PostCreateBox>
     </>
   );
@@ -201,8 +205,17 @@ const PostButton = styled.button`
 const PostPreviewBox = styled.div`
   width: 50%;
   height: 100vh;
+  padding: 32px 48px;
   margin: 0;
   background-color: rgb(251, 253, 252);
+`;
+
+const PreviewTitle = styled.h1`
+  margin-top: 26px;
+`;
+
+const PreviewContent = styled.p`
+  margin-top: 64px;
 `;
 
 export default PostCreate;
