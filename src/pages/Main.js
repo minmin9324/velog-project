@@ -52,20 +52,20 @@ const PostList = styled.div`
 
 const Main = () => {
   const [posts, setPosts] = useState([]);
-
   const [hasmorePost, setHasmorePost] = useState(true);
   const [loading, setLoading] = useState(false);
   const [ref, inView] = useInView();
   const [page, setPage] = useState(1);
 
   const getItems = useCallback(async () => {
+    console.log("데이터 불러오는중");
     setLoading(true);
     await axios
       .get(
         `https://limitless-sierra-67996.herokuapp.com/v1/posts?limit=20&page=${page}&sortBy=createdAt:desc`
       )
       .then((res) => {
-        // console.log(res.data.results.length);
+        console.log(res.data.results);
         if (res.data.results.length === 0) {
           setHasmorePost(false);
         }
@@ -78,8 +78,9 @@ const Main = () => {
   }, [page]);
 
   useEffect(() => {
-    getItems();
-    // console.log(posts);
+    setTimeout(()=>{
+      getItems();
+    },300)
   }, [getItems]);
 
   useEffect(() => {

@@ -96,12 +96,12 @@ const DeleteModal = ({isModal, postId}) => {
 
   const onConfirm = () => {
     console.log(postId);
-    // axios.delete(`https://limitless-sierra-67996.herokuapp.com/v1/posts/${postId}`)
-    //   .then((res)=>{
-    //     console.log(res.data);
-    //     navigate("/");
-    //   })
-    //   .catch(err=>console.log(err))
+    axios.delete(`https://limitless-sierra-67996.herokuapp.com/v1/posts/${postId}`)
+      .then((res)=>{
+        console.log(res.data);
+        navigate("/");
+      })
+      .catch(err=>console.log(err))
     navigate("/");
   }
   return (
