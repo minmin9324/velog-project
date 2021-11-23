@@ -105,6 +105,7 @@ const PostCreateBox = styled.div`
 const PostWritingBox = styled.form`
   position: relative;
   width: 50%;
+  min-width: 500px;
   height: 100vh;
   padding: 32px 48px;
   box-sizing: border-box;
@@ -114,7 +115,7 @@ const Titlebox = styled.textarea`
   padding: 0px;
   font-size: 2.75rem;
   width: 100%;
-  height: 66px;
+  max-height: 66px;
   resize: none;
   line-height: 1.5;
   outline: none;
@@ -147,7 +148,7 @@ const Tag = styled.input`
 
 const TextBox = styled.div`
   width: 100%;
-  height: 500px;
+  height: 60vh;
 `;
 
 const TextEditor = styled.textarea`
